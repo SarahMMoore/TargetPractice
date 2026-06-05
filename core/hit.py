@@ -1,5 +1,5 @@
 import turtle
-import game_play
+import TargetPractice.core.game_play as game_play
 
 def main():
     game_play.launch()

@@ -1,9 +1,9 @@
 import turtle
-import x_axis
-import y_axis
-import draw_line
-import quadrant
-import scope
+from graphics import x_axis
+from graphics import y_axis
+from graphics import draw_line
+from graphics import quadrant
+from graphics import scope
 
 # Main
 def main():

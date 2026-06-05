@@ -1,5 +1,5 @@
 import turtle
-import draw_line
+from . import draw_line
 
 # X-Axis
 def main():

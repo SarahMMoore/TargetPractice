@@ -1,24 +1,16 @@
-# Sarah Moore
-# Programming Assignment 4
-# CS 250
-# 08. October 2024
-# Game that asks user for input and loops until
-# the users input matches a specific data set.
-# Target Practice
+# 1play_me.py
+# Sarah Moore # Programming Assignment 4 # CS 250 # 08. October 2024 
 
-import display
-import title_animations
-import game_play
-import turtle
+from graphics import display
+from scenes import title_animations
+import turtle 
 
 def main():
-    
     display.setup()
-    title_animations.sequence_1()
-    title_animations.sequence_2()
-    title_animations.sequence_3()
-    game_play.launch() 
+    # Launch the interactive menu page sequence
+    title_animations.start_menu()
+    # Keep the system window open and listening for keyboard presses
+    turtle.mainloop()
 
 if __name__ == '__main__':
     main()
-

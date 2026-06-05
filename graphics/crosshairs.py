@@ -1,7 +1,7 @@
 import turtle
-import x_axis
-import y_axis
-import quadrant
+from . import x_axis
+from . import y_axis
+from . import quadrant
 
 def main():
     x_axis.setup()
