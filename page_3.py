@@ -1,24 +1,16 @@
+# TargetPractice/page_3.py
 import turtle
+import time
 
-# Main
-def main():    
-    line()
-    pause()
-
-def line():
-    turtle.hideturtle()
+def show_ready_screen():
+    turtle.clear()
     turtle.penup()
-    turtle.goto(0,50)                               
+    turtle.goto(0, 50)
     turtle.pendown()
     turtle.pencolor('silver')
-    turtle.write("LET'S PLAY!",
-                 move=False, align="center",
-                 font=("times new roman", 25, "bold"))
-def pause():
+    turtle.write("LET'S PLAY!", align="center", font=("times new roman", 25, "bold"))
     turtle.penup()
-    turtle.circle(200)                                  
-    turtle.reset()
-    turtle.hideturtle()
-
-if __name__ == '__main__': 
-    main()
+    
+    turtle.update()
+    time.sleep(1.5)
+    turtle.clear()

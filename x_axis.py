@@ -1,16 +1,10 @@
+# TargetPractice/x_axis.py
 import turtle
 import draw_line
 
-# X-Axis
-def main():
-    setup()
-    draw_line.draw()
-
-def setup():    
+def draw_x():
     turtle.hideturtle()
     turtle.penup()
-    turtle.goto(-275,0)                                
+    turtle.goto(-275, 0)
     turtle.setheading(0)
-
-if __name__ == '__main__': 
-    main()
+    draw_line.draw()
