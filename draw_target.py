@@ -1,26 +1,22 @@
+# TargetPractice/draw_target.py
 import turtle
 
-def main():
-    square()
-
-# Draw the target.
-def square():
-    # Target
-    turtle.goto(100, 250)
+def square(x, y):
+    """Draws a square target boundary and central bullseye at a given coordinate."""
+    # Draw outer box border
+    turtle.penup()
+    turtle.goto(x, y)
     turtle.setheading(0)
     turtle.pencolor('silver')
     turtle.pendown()
-    TARGET_LINE = 0
-    for TARGET_LINE in range (4) :
+    
+    for _ in range(4):
         turtle.forward(25)
         turtle.left(90)
-    TARGET_LINE += 1
     turtle.penup()
-    # Draw the bullseye
-    turtle.goto(112.5,262.5)
+    
+    # Draw central point bullseye (centered inside 25x25 box)
+    turtle.goto(x + 12.5, y + 12.5)
     turtle.pencolor('red')
-    turtle.dot()
+    turtle.dot(6) # Sets specific crisp pixel width for target indicator
     turtle.pencolor('silver')
-
-if __name__ == '__main__':
-    main()

@@ -1,44 +1,61 @@
 # TargetPractice/game_play.py
 import turtle
+import random
 import draw_target
 import x_axis
 import y_axis
 import scope
 import quadrant
+import math
+
+# Global state tracker to safely handle screen pausing without freezing the app window
+waiting_for_next_turn = False
 
 def launch():
-    # Performance optimization: turn off automatic screen rendering
+    global waiting_for_next_turn
     turtle.tracer(0) 
-    
-    angle = 0.0
-    force = 0.00
     FORCE_FACTOR = 30 
     
-    # Active Game Loop
-    while angle != 66.8 or force != 9.52:
+    # Generate random target positions
+    target_x = random.randint(-200, 200)
+    target_y = random.randint(-200, 200)
+    
+    bullseye_x = target_x + 12.5
+    bullseye_y = target_y + 12.5
+    
+    # Configure window event listeners for key taps
+    turtle.listen()
+    
+    def advance_turn():
+        global waiting_for_next_turn
+        waiting_for_next_turn = False
+
+    # Bind the Spacebar key to advance past target misses cleanly
+    turtle.onkey(advance_turn, "space")
+    
+    while True:
         turtle.clear()
+        # FIX 1: Explicitly make sure the turtle is hidden at the start of the frame
         turtle.hideturtle()
         turtle.penup()
         turtle.bgcolor('black')
         
-        # Safely render all background layers
+        # Render clean background vectors
         x_axis.draw_x()
         y_axis.draw_y()
         scope.draw()
         quadrant.draw()
-        draw_target.square()
-        
-        # Flush the graphics buffer to render instantly
+        draw_target.square(target_x, target_y)
         turtle.update() 
         
-        # Prompt user inputs
-        angle = turtle.numinput('Input', "Enter the projectile's angle (0-360):", minval=0, maxval=360)
-        if angle is None: break # Exit safely if user presses Cancel
+        # Capture input values safely
+        angle = turtle.numinput('Aiming Control', "Enter your launch angle (0-360):", minval=0, maxval=360)
+        if angle is None: break
         
-        force = turtle.numinput('Input', 'Enter the launch force (1-10):', minval=1, maxval=10)
+        force = turtle.numinput('Aiming Control', 'Enter launch force (1-10):', minval=1, maxval=10)
         if force is None: break
         
-        # Display chosen tracking variables
+        # Render tracking stat string overlay
         turtle.pencolor('silver')
         turtle.penup()
         turtle.goto(-250, 250)
@@ -47,26 +64,41 @@ def launch():
         # Position projectile at origin
         turtle.goto(0, 0)
         turtle.setheading(angle)
-        turtle.showturtle()
+        
+        # FIX 2: Removed turtle.showturtle() so the arrow never becomes visible
+        turtle.hideturtle() 
         turtle.pendown()
         
-        # Animate shell vector path
+        # Trace active line path across the screen
         distance = force * FORCE_FACTOR
-        turtle.tracer(1) # Re-enable visibility for the projectile line draw
+        turtle.tracer(1) 
         turtle.forward(distance)
-        turtle.dot(8, 'red') # Visual impact point indicator
+        turtle.dot(8, 'red') 
         turtle.penup()
+        turtle.hideturtle() # Extra safety cleanup
         
-        # Process hit boundaries
-        check_hit_status(turtle.xcor(), turtle.ycor(), angle, force)
+        hit_x, hit_y = turtle.xcor(), turtle.ycor()
         
-        # Set tracer back to 0 for background rendering in the next turn
+        # Passing all required arguments into the hit calculator
+        is_won = check_hit_status(hit_x, hit_y, target_x, target_y, bullseye_x, bullseye_y, angle, force)
+        if is_won:
+            break
+            
+        # Freeze screen loop and wait for spacebar key response from user
+        waiting_for_next_turn = True
+        turtle.goto(-275, 100) # Patched to -275 to fix line overlap alignment text bug
+        turtle.pencolor('yellow')
+        turtle.write("Press [SPACEBAR] to clear and try again.", font=("Arial", 11, "bold"))
+        turtle.update()
+        
         turtle.tracer(0)
+        while waiting_for_next_turn:
+            turtle.update()
 
-def check_hit_status(hit_x, hit_y, angle, force):
-    """Checks coordinate boundaries for bullseyes, target box clips, or misses."""
-    # Perfect Direct Center Bullseye
-    if 112.4 <= hit_x <= 112.6 and 262.4 <= hit_y <= 262.6:
+def check_hit_status(hit_x, hit_y, t_x, t_y, b_x, b_y, current_angle, current_force):
+    """Processes precision checking loops with smart mathematical guidance paths."""
+    # 1. Bullseye Center Area Match Check
+    if (b_x - 2.5) <= hit_x <= (b_x + 2.5) and (b_y - 2.5) <= hit_y <= (b_y + 2.5):
         turtle.clear()
         turtle.bgcolor('red')
         turtle.pencolor('black')
@@ -74,46 +106,40 @@ def check_hit_status(hit_x, hit_y, angle, force):
         turtle.goto(0, 100)
         turtle.write('BULLS-EYE!!', align="center", font=("elephant", 20, "bold"))
         turtle.goto(0, 50)
-        turtle.write('The target has been destroyed.', align="center", font=("elephant", 20, "bold"))
+        turtle.write('The random target has been destroyed.', align="center", font=("elephant", 20, "bold"))
         turtle.goto(0, 0)
         turtle.write('YOU WIN!!', align="center", font=("elephant", 20, "bold"))
         
         turtle.goto(0, -100)
         turtle.write('Click anywhere to exit.', align="center", font=("elephant", 14, "bold"))
         turtle.exitonclick()
+        return True
         
-    # Indirect Target Box Hit
-    elif 100 <= hit_x <= 125 and 250 <= hit_y <= 275:
+    # 2. Outer Square Boundaries Box Target Clip Check
+    elif t_x <= hit_x <= (t_x + 25) and t_y <= hit_y <= (t_y + 25):
+        target_angle = math.degrees(math.atan2(b_y, b_x)) % 360
+        target_force = math.sqrt(b_x**2 + b_y**2) / 30.0
+        
+        angle_adjust = target_angle - current_angle
+        force_adjust = target_force - current_force
+        
         turtle.goto(-250, 200)
-        turtle.write('You hit the target, but not the center.', font=("Arial", 11, "bold"))
-        
-        angle_adjust = 66.8 - angle
-        force_adjust = 9.52 - force
+        turtle.write('You hit the target, but missed the center bullseye.', font=("Arial", 11, "bold"))
         turtle.goto(-250, 150)
-        turtle.write(f'Adjust angle by: {angle_adjust:.2f}°\nAdjust force by: {force_adjust:.2f}', font=("Arial", 10, "italic"))
-        
-        turtle.update()
-        turtle.numinput("Result", "Indirect Hit! Press OK to adjust values.", minval=0, maxval=0)
+        turtle.write(f'Adjust angle by: {angle_adjust:.1f}°\nAdjust force by: {force_adjust:.2f}', font=("Arial", 10, "italic"))
+        return False
 
-    # Miss Status
+    # 3. Miss Condition
     else:
         turtle.goto(-250, 200)
-        turtle.write('You missed the target.', font=("Arial", 11, "bold"))
-        turtle.goto(-250, 150)
+        turtle.write('You missed the target entirely.', font=("Arial", 11, "bold"))
         
-        if angle > 66.8 and force > 9.52:
-            hint = 'Try a slighter angle and use less force.'
-        elif angle < 66.8 and force < 9.52:
-            hint = 'Try a greater angle and use more force.'
-        elif angle > 66.8 and force < 9.52:
-            hint = 'Try a slighter angle and use more force.'
-        elif angle < 66.8 and force > 9.52:
-            hint = 'Try a greater angle and use less force.'
-        elif angle == 66.8 and force > 9.52:
-            hint = 'Use less force.'
-        else:
-            hint = 'Use more force.'
-            
-        turtle.write(hint, font=("Arial", 10, "italic"))
-        turtle.update()
-        turtle.numinput("Result", "Missed! Press OK to try again.", minval=0, maxval=0)
+        target_angle = math.degrees(math.atan2(b_y, b_x)) % 360
+        target_force = math.sqrt(b_x**2 + b_y**2) / 30.0
+        
+        hint_angle = "greater" if current_angle < target_angle else "slighter"
+        hint_force = "more" if current_force < target_force else "less"
+        
+        turtle.goto(-250, 150)
+        turtle.write(f'Hint: Try a {hint_angle} angle and {hint_force} force.', font=("Arial", 10, "italic"))
+        return False
