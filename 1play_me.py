@@ -1,23 +1,19 @@
 # TargetPractice/1play_me.py
-import display
-import title_animations
-import game_play
+from core import display, game_display
+from interface import manager
 import turtle
 
 def main():
     # 1. Initialize screen frame context
     display.setup()
     
-    # 2. Sequential Tutorial Sequences
-    title_animations.sequence_1()
-    title_animations.sequence_2()
-    title_animations.sequence_3()
+    # 2. Sequential Tutorial Sequences from our interface package
+    manager.run_sequences()
     
-    # 3. Fire up interactive on-screen keyboard listener loops
-    game_play.launch()
+    # 3. Fire up interactive on-screen keyboard listener loops from our engine pack
+    game_display.launch()
     
-    # 🎯 THE PERMANENT CANVAS FIX:
-    # Keeps the Python window completely locked open on macOS for input loops
+    # Keeps window locked open safely on macOS
     turtle.mainloop()
 
 if __name__ == '__main__':
